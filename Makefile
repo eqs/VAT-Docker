@@ -1,7 +1,6 @@
 
-PROJECT_NAME=deeplabcut-work
-JUPYTER_PORT=9000
-TENSORBOARD_PORT=9001
+PROJECT_NAME=visipedia-annotation-tools-work
+SERVER_PORT=8008
 IMAGE_NAME=$(PROJECT_NAME)-image
 CONTAINER_NAME=$(PROJECT_NAME)-container
 USER_ID=$(shell id -u)
@@ -25,16 +24,12 @@ docker-run:
 	docker run -it --rm --runtime=nvidia \
 		--user ubuntu \
 		--name $(CONTAINER_NAME) \
-		-p $(JUPYTER_PORT):$(JUPYTER_PORT) \
-		-p $(TENSORBOARD_PORT):$(TENSORBOARD_PORT) \
-		-e DISPLAY=$(DISPLAY) \
-		-v /tmp/.X11-unix/:/tmp/.X11-unix \
+		-p $(SERVER_PORT):8008 \
 		-v `pwd`:/work \
+		-e MONGO_INITDB_ROOT_USERNAME=root \
+		-e MONGO_INITDB_ROOT_PASSWORD=example \
+		-e MONGO_INITDB_DATABASE=annotation_database \
 		$(IMAGE_NAME) \
-		/bin/bash
-
-jupyter:
-	jupyter lab --ip=0.0.0.0 --allow-root --port=$(JUPYTER_PORT) \
-		--NotebookApp.token='deeplabcut' \
-		--NotebookApp.terminado_settings='{"shell_command": ["/bin/bash"]}'
+		/bin/bash /work/scripts/docker-entrypoint.sh
+		#python3 /home/ubuntu/annotation_tools/run.py --port 8008 --host 0.0.0.0
 
